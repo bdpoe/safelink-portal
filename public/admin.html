@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Administrador - Acompaña U + SafeLink</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Leaflet CSS para el mapa -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="app-body">
+  <nav class="navbar navbar-dark bg-dark px-4">
+    <span class="navbar-brand mb-0 h1">
+      Panel de Seguridad Universitaria
+    </span>
+
+    <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+      Cerrar sesión
+    </button>
+  </nav>
+
+  <main class="container-fluid py-4 px-4">
+    <div class="row g-4">
+
+      <!-- COLUMNA PRINCIPAL -->
+      <div class="col-lg-8">
+
+        <!-- SEGUIMIENTO ACTIVO -->
+        <section class="card shadow-sm border-0 mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <span class="badge text-bg-primary mb-2">Acompañamiento activo</span>
+                <h1 class="h3 mb-0">Seguimiento de estudiantes</h1>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="cargarDatos()">
+                  Actualizar
+                </button>
+
+                <button class="btn btn-outline-danger btn-sm" onclick="limpiarPruebas()">
+                  Limpiar pruebas
+                </button>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <span>Total seguimientos activos</span>
+                  <strong id="totalSeguimientos">0</strong>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="stat-card danger">
+                  <span>En riesgo / SOS</span>
+                  <strong id="seguimientosRiesgo">0</strong>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="stat-card success">
+                  <span>Llegaron seguros</span>
+                  <strong id="seguimientosFinalizados">0</strong>
+                </div>
+              </div>
+            </div>
+
+            <div id="listaSeguimientos" class="alert-list">
+              <p class="text-muted">No hay estudiantes en seguimiento activo.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- HISTORIAL DE ALERTAS SOS -->
+        <section class="card shadow-sm border-0 mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <span class="badge text-bg-danger mb-2">Alertas SOS</span>
+                <h2 class="h4 mb-0">Historial de alertas</h2>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <span>Total alertas</span>
+                  <strong id="totalAlertas">0</strong>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="stat-card danger">
+                  <span>Activas</span>
+                  <strong id="alertasActivas">0</strong>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="stat-card success">
+                  <span>Atendidas</span>
+                  <strong id="alertasAtendidas">0</strong>
+                </div>
+              </div>
+            </div>
+
+            <div id="listaAlertas" class="alert-list">
+              <p class="text-muted">No hay alertas registradas.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- HISTORIAL DE RECORRIDOS FINALIZADOS -->
+        <section class="card shadow-sm border-0 mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <span class="badge text-bg-success mb-2">Historial de recorridos</span>
+                <h2 class="h4 mb-0">Llegadas y seguimientos finalizados</h2>
+              </div>
+            </div>
+
+            <div id="historialSeguimientos" class="alert-list">
+              <p class="text-muted">Todavía no hay recorridos finalizados.</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- COLUMNA DEL MAPA -->
+      <div class="col-lg-4">
+        <section class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2 class="h4 mb-0">Mapa de ubicación en tiempo real</h2>
+
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="centrarMapaGeneral()">
+                  Ver todos
+                </button>
+
+                <button class="btn btn-primary btn-sm" onclick="centrarEnMiUbicacion()">
+                  Mi ubicación
+                </button>
+              </div>
+            </div>
+
+            <div id="mapaSeguimiento" class="real-map"></div>
+
+            <div class="mt-3 small">
+              <p class="mb-1">
+                <span class="dot blue"></span>
+                Alumno 1 / estudiante en ruta
+              </p>
+
+              <p class="mb-1">
+                <span class="dot" style="background:#6f42c1;"></span>
+                Alumno 2 en ruta
+              </p>
+
+              <p class="mb-1">
+                <span class="dot" style="background:#fd7e14;"></span>
+                Alumno 3 en ruta
+              </p>
+
+              <p class="mb-1">
+                <span class="dot red"></span>
+                Alumno con SOS activo
+              </p>
+
+              <p class="mb-0">
+                <span class="dot green"></span>
+                Llegada segura confirmada
+              </p>
+            </div>
+
+            <div class="value-box mt-4">
+              El mapa permite visualizar la ubicación enviada por los estudiantes al activar SafeLink, presionar SOS o confirmar su llegada segura.
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Leaflet JS para el mapa -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

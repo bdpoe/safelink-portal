@@ -1,0 +1,272 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f3f6fb;
+  color: #0b1f3a;
+}
+
+.login-body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #061b3d, #0b4ea2);
+}
+
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  padding: 35px;
+  border-radius: 22px;
+}
+
+.login-card h1 {
+  font-size: 30px;
+  font-weight: 800;
+  color: #061b3d;
+}
+
+.demo-box {
+  background: #eef5ff;
+  border-left: 5px solid #0b4ea2;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.app-body {
+  background: #f3f6fb;
+}
+
+.navbar {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
+.card {
+  border-radius: 18px;
+}
+
+.sos-button {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  align-self: center;
+  margin: 10px auto;
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  box-shadow: 0 0 0 12px rgba(220, 53, 69, 0.14);
+}
+
+.value-box {
+  background: #eef5ff;
+  border-left: 5px solid #0b4ea2;
+  padding: 16px;
+  border-radius: 12px;
+  color: #0b1f3a;
+}
+
+.stat-card {
+  background: #eef5ff;
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 6px solid #0b4ea2;
+}
+
+.stat-card span {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.stat-card strong {
+  font-size: 34px;
+  color: #0b4ea2;
+}
+
+.stat-card.danger {
+  background: #fff1f2;
+  border-left-color: #dc3545;
+}
+
+.stat-card.danger strong {
+  color: #dc3545;
+}
+
+.stat-card.success {
+  background: #ecfdf3;
+  border-left-color: #198754;
+}
+
+.stat-card.success strong {
+  color: #198754;
+}
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.alert-card {
+  padding: 18px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  border-left: 7px solid #0b4ea2;
+}
+
+.alert-card.active {
+  background: #fff5f5;
+  border-left-color: #dc3545;
+}
+
+.alert-card.attended {
+  background: #f1fff6;
+  border-left-color: #198754;
+}
+
+.alert-card.tracking {
+  background: #fffbeb;
+  border-left-color: #ffc107;
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.map-box {
+  position: relative;
+  height: 430px;
+  background:
+    linear-gradient(90deg, rgba(11, 78, 162, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(11, 78, 162, 0.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 2px solid #dbeafe;
+}
+
+.map-route {
+  position: absolute;
+  top: 230px;
+  left: 55px;
+  width: 320px;
+  height: 7px;
+  background: #0b4ea2;
+  transform: rotate(-23deg);
+  border-radius: 50px;
+  box-shadow: 0 0 15px rgba(11, 78, 162, 0.5);
+}
+
+.pin {
+  position: absolute;
+  padding: 9px 13px;
+  border-radius: 22px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.2);
+}
+
+.university {
+  top: 275px;
+  left: 30px;
+  background: #0b4ea2;
+}
+
+.danger {
+  top: 165px;
+  left: 205px;
+  background: #dc3545;
+}
+
+.destination {
+  top: 75px;
+  right: 25px;
+  background: #198754;
+}
+
+.dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.blue {
+  background: #0b4ea2;
+}
+
+.red {
+  background: #dc3545;
+}
+
+.green {
+  background: #198754;
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    padding: 25px;
+  }
+
+  .sos-button {
+    width: 140px;
+    height: 140px;
+    font-size: 30px;
+  }
+
+  .alert-card {
+    flex-direction: column;
+  }
+
+  .alert-actions {
+    min-width: 100%;
+  }
+
+  .map-box {
+    height: 330px;
+  }
+}
+
+.real-map {
+  width: 100%;
+  height: 430px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 2px solid #dbeafe;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.leaflet-popup-content {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-content strong {
+  color: #061b3d;
+}
+
