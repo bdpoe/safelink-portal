@@ -10,6 +10,29 @@ const io = new Server(server);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// ===============================
+// FUNCIONES DE FECHA Y HORA PERÚ
+// ===============================
+
+function obtenerFechaPeru() {
+  return new Date().toLocaleDateString("es-PE", {
+    timeZone: "America/Lima",
+  });
+}
+
+function obtenerHoraPeru() {
+  return new Date().toLocaleTimeString("es-PE", {
+    timeZone: "America/Lima",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+// ===============================
+// USUARIOS DE PRUEBA
+// ===============================
+
 const usuarios = [
   {
     id: 1,
@@ -41,16 +64,22 @@ const usuarios = [
   },
 ];
 
-// Historial completo
+// ===============================
+// DATOS TEMPORALES EN MEMORIA
+// ===============================
+
 let alertas = [];
 let seguimientos = [];
 
-// Login
+// ===============================
+// LOGIN
+// ===============================
+
 app.post("/api/login", (req, res) => {
   const { correo, password } = req.body;
 
   const usuario = usuarios.find(
-    (u) => u.correo === correo && u.password === password,
+    (u) => u.correo === correo && u.password === password
   );
 
   if (!usuario) {
@@ -70,29 +99,36 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-// Activar seguimiento
+// ===============================
+// ACTIVAR SEGUIMIENTO
+// ===============================
+
 app.post("/api/seguimiento", (req, res) => {
-  const { alumnoId, nombre, ruta, ubicacion, latitud, longitud, precision } =
-    req.body;
+  const {
+    alumnoId,
+    nombre,
+    ruta,
+    ubicacion,
+    latitud,
+    longitud,
+    precision,
+  } = req.body;
 
   const nuevoSeguimiento = {
     id: Date.now(),
     alumnoId,
     nombre,
     ruta: ruta || "Ruta no especificada",
-    ubicacion: ubicacion || "Ubicación simulada",
+    ubicacion: ubicacion || "Ubicación no especificada",
     latitud: latitud || null,
     longitud: longitud || null,
     precision: precision || null,
-
     estado: "EN RUTA",
-    fechaSalida: new Date().toLocaleDateString("es-PE"),
-    horaSalida: new Date().toLocaleTimeString("es-PE"),
+    fechaSalida: obtenerFechaPeru(),
+    horaSalida: obtenerHoraPeru(),
     horaLlegada: null,
   };
 
-  // Ya no reemplaza seguimientos anteriores.
-  // Cada activación queda guardada como historial.
   seguimientos.unshift(nuevoSeguimiento);
 
   io.emit("actualizar-seguimientos", seguimientos);
@@ -103,12 +139,18 @@ app.post("/api/seguimiento", (req, res) => {
   });
 });
 
-// Listar todos los seguimientos
+// ===============================
+// LISTAR SEGUIMIENTOS
+// ===============================
+
 app.get("/api/seguimientos", (req, res) => {
   res.json(seguimientos);
 });
 
-// Confirmar llegada segura por ID de seguimiento
+// ===============================
+// CONFIRMAR LLEGADA SEGURA
+// ===============================
+
 app.put("/api/seguimiento/:id/llegada", (req, res) => {
   const { id } = req.params;
 
@@ -121,7 +163,7 @@ app.put("/api/seguimiento/:id/llegada", (req, res) => {
   }
 
   seguimiento.estado = "LLEGÓ SEGURO";
-  seguimiento.horaLlegada = new Date().toLocaleTimeString("es-PE");
+  seguimiento.horaLlegada = obtenerHoraPeru();
 
   io.emit("actualizar-seguimientos", seguimientos);
 
@@ -131,7 +173,10 @@ app.put("/api/seguimiento/:id/llegada", (req, res) => {
   });
 });
 
-// Crear alerta SOS
+// ===============================
+// CREAR ALERTA SOS
+// ===============================
+
 app.post("/api/alerta", (req, res) => {
   const {
     alumnoId,
@@ -150,24 +195,20 @@ app.post("/api/alerta", (req, res) => {
     seguimientoId: seguimientoId || null,
     nombre,
     ruta: ruta || "Ruta no especificada",
-    ubicacion: ubicacion || "Ubicación simulada",
+    ubicacion: ubicacion || "Ubicación no especificada",
     latitud: latitud || null,
     longitud: longitud || null,
     precision: precision || null,
-
     estado: "ACTIVA",
     tipo: "SOS",
-    fecha: new Date().toLocaleDateString("es-PE"),
-    hora: new Date().toLocaleTimeString("es-PE"),
+    fecha: obtenerFechaPeru(),
+    hora: obtenerHoraPeru(),
   };
 
   alertas.unshift(nuevaAlerta);
 
-  // Si el SOS pertenece a un seguimiento activo, actualizamos ese seguimiento
   if (seguimientoId) {
-    const seguimiento = seguimientos.find(
-      (s) => s.id === Number(seguimientoId),
-    );
+    const seguimiento = seguimientos.find((s) => s.id === Number(seguimientoId));
 
     if (seguimiento) {
       seguimiento.estado = "SOS ACTIVADO";
@@ -188,12 +229,18 @@ app.post("/api/alerta", (req, res) => {
   });
 });
 
-// Listar alertas
+// ===============================
+// LISTAR ALERTAS
+// ===============================
+
 app.get("/api/alertas", (req, res) => {
   res.json(alertas);
 });
 
-// Cambiar estado de alerta
+// ===============================
+// CAMBIAR ESTADO DE ALERTA
+// ===============================
+
 app.put("/api/alerta/:id/estado", (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
@@ -216,7 +263,10 @@ app.put("/api/alerta/:id/estado", (req, res) => {
   });
 });
 
-// Limpiar todas las pruebas del día
+// ===============================
+// LIMPIAR TODAS LAS PRUEBAS
+// ===============================
+
 app.delete("/api/limpiar-pruebas", (req, res) => {
   alertas = [];
   seguimientos = [];
@@ -229,10 +279,10 @@ app.delete("/api/limpiar-pruebas", (req, res) => {
   });
 });
 
+// ===============================
+// ELIMINAR ALERTA
+// ===============================
 
-
-
-// Eliminar alerta
 app.delete("/api/alerta/:id", (req, res) => {
   const { id } = req.params;
 
@@ -245,7 +295,10 @@ app.delete("/api/alerta/:id", (req, res) => {
   });
 });
 
-// Tiempo real
+// ===============================
+// SOCKET.IO - TIEMPO REAL
+// ===============================
+
 io.on("connection", (socket) => {
   console.log("Usuario conectado al sistema");
 
@@ -256,6 +309,10 @@ io.on("connection", (socket) => {
     console.log("Usuario desconectado");
   });
 });
+
+// ===============================
+// SERVIDOR
+// ===============================
 
 const PORT = process.env.PORT || 3000;
 

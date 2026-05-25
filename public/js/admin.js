@@ -35,7 +35,7 @@ socket.on("nueva-alerta", (alerta) => {
 });
 
 function inicializarMapa() {
-  mapa = L.map("mapaSeguimiento").setView([-16.3989, -71.5350], 15);
+  mapa = L.map("mapaSeguimiento").setView([-16.3989, -71.535], 15);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
@@ -70,7 +70,9 @@ function renderizarSeguimientos(seguimientos) {
 
   const total = activos.length;
   const riesgo = activos.filter((s) => s.estado === "SOS ACTIVADO").length;
-  const finalizados = seguimientos.filter((s) => s.estado === "LLEGÓ SEGURO").length;
+  const finalizados = seguimientos.filter(
+    (s) => s.estado === "LLEGÓ SEGURO"
+  ).length;
 
   document.getElementById("totalSeguimientos").textContent = total;
   document.getElementById("seguimientosRiesgo").textContent = riesgo;
@@ -123,7 +125,9 @@ function crearTarjetaSeguimiento(seguimiento, mostrarAccionMapa) {
 
   const coordenadasTexto =
     seguimiento.latitud && seguimiento.longitud
-      ? `${Number(seguimiento.latitud).toFixed(6)}, ${Number(seguimiento.longitud).toFixed(6)}`
+      ? `${Number(seguimiento.latitud).toFixed(6)}, ${Number(
+          seguimiento.longitud
+        ).toFixed(6)}`
       : "Sin coordenadas reales";
 
   card.innerHTML = `
@@ -143,11 +147,15 @@ function crearTarjetaSeguimiento(seguimiento, mostrarAccionMapa) {
       <p class="mb-1"><strong>Ubicación escrita:</strong> ${seguimiento.ubicacion}</p>
       <p class="mb-1"><strong>Coordenadas:</strong> ${coordenadasTexto}</p>
       <p class="mb-1"><strong>Precisión:</strong> ${
-        seguimiento.precision ? `${Math.round(seguimiento.precision)} metros` : "No disponible"
+        seguimiento.precision
+          ? `${Math.round(seguimiento.precision)} metros`
+          : "No disponible"
       }</p>
       <p class="mb-1"><strong>Fecha de salida:</strong> ${seguimiento.fechaSalida}</p>
       <p class="mb-1"><strong>Hora de salida:</strong> ${seguimiento.horaSalida}</p>
-      <p class="mb-3"><strong>Hora de llegada:</strong> ${seguimiento.horaLlegada || "Pendiente"}</p>
+      <p class="mb-3"><strong>Hora de llegada:</strong> ${
+        seguimiento.horaLlegada || "Pendiente"
+      }</p>
 
       ${
         mostrarAccionMapa
@@ -241,37 +249,56 @@ function actualizarMapa(seguimientos) {
   }
 
   seguimientosConCoordenadas.forEach((seguimiento) => {
-    const lat = Number(seguimiento.latitud);
-    const lng = Number(seguimiento.longitud);
+    const latOriginal = Number(seguimiento.latitud);
+    const lngOriginal = Number(seguimiento.longitud);
+
+    const coordenadasVisuales = obtenerCoordenadasVisuales(
+      latOriginal,
+      lngOriginal,
+      seguimiento.alumnoId
+    );
 
     const color = obtenerColorMarcador(seguimiento);
 
-    const marker = L.circleMarker([lat, lng], {
-      radius: seguimiento.estado === "SOS ACTIVADO" ? 14 : 10,
-      color,
-      fillColor: color,
-      fillOpacity: 0.9,
-      weight: 3,
-    }).addTo(mapa);
+    const marker = L.circleMarker(
+      [coordenadasVisuales.lat, coordenadasVisuales.lng],
+      {
+        radius: seguimiento.estado === "SOS ACTIVADO" ? 14 : 10,
+        color,
+        fillColor: color,
+        fillOpacity: 0.9,
+        weight: 3,
+      }
+    ).addTo(mapa);
 
     marker.seguimientoId = seguimiento.id;
 
-    marker.bindPopup(`
-      <strong>${seguimiento.nombre}</strong><br>
-      Estado: ${seguimiento.estado}<br>
-      Ruta: ${seguimiento.ruta}<br>
-      Ubicación: ${seguimiento.ubicacion}<br>
-      Salida: ${seguimiento.horaSalida}<br>
-      Llegada: ${seguimiento.horaLlegada || "Pendiente"}<br>
-      Precisión: ${
-        seguimiento.precision ? `${Math.round(seguimiento.precision)} metros` : "No disponible"
-      }
-    `);
+    marker.bindPopup(crearContenidoPopup(seguimiento));
+
+    marker.on("click", () => {
+      marker.openPopup();
+    });
 
     marcadores.push(marker);
   });
 
   centrarMapaGeneral();
+}
+
+function crearContenidoPopup(seguimiento) {
+  return `
+    <strong>${seguimiento.nombre}</strong><br>
+    Estado: ${seguimiento.estado}<br>
+    Ruta: ${seguimiento.ruta}<br>
+    Ubicación: ${seguimiento.ubicacion}<br>
+    Salida: ${seguimiento.horaSalida}<br>
+    Llegada: ${seguimiento.horaLlegada || "Pendiente"}<br>
+    Precisión: ${
+      seguimiento.precision
+        ? `${Math.round(seguimiento.precision)} metros`
+        : "No disponible"
+    }
+  `;
 }
 
 function verEnMapa(seguimientoId) {
@@ -282,21 +309,64 @@ function verEnMapa(seguimientoId) {
     return;
   }
 
-  const lat = Number(seguimiento.latitud);
-  const lng = Number(seguimiento.longitud);
+  const latOriginal = Number(seguimiento.latitud);
+  const lngOriginal = Number(seguimiento.longitud);
 
-  mapa.setView([lat, lng], 18);
+  const coordenadasVisuales = obtenerCoordenadasVisuales(
+    latOriginal,
+    lngOriginal,
+    seguimiento.alumnoId
+  );
 
-  const marcador = marcadores.find((m) => m.seguimientoId === seguimientoId);
+  const mapaElemento = document.getElementById("mapaSeguimiento");
 
-  if (marcador) {
-    marcador.openPopup();
-  }
+  mapaElemento.scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+  });
+
+  setTimeout(() => {
+    mapa.invalidateSize();
+
+    mapa.setView([coordenadasVisuales.lat, coordenadasVisuales.lng], 18);
+
+    const marcador = marcadores.find(
+      (m) => m.seguimientoId === seguimientoId
+    );
+
+    if (marcador) {
+      marcador.openPopup();
+      return;
+    }
+
+    L.popup()
+      .setLatLng([coordenadasVisuales.lat, coordenadasVisuales.lng])
+      .setContent(crearContenidoPopup(seguimiento))
+      .openOn(mapa);
+  }, 600);
+}
+
+function obtenerCoordenadasVisuales(lat, lng, alumnoId) {
+  const desplazamientos = {
+    2: { lat: 0.0, lng: 0.0 },
+    3: { lat: 0.00008, lng: 0.00008 },
+    4: { lat: -0.00008, lng: 0.00008 },
+  };
+
+  const desplazamiento = desplazamientos[alumnoId] || {
+    lat: 0,
+    lng: 0,
+  };
+
+  return {
+    lat: lat + desplazamiento.lat,
+    lng: lng + desplazamiento.lng,
+  };
 }
 
 function centrarMapaGeneral() {
   if (marcadores.length === 0) {
-    mapa.setView([-16.3989, -71.5350], 15);
+    mapa.setView([-16.3989, -71.535], 15);
     return;
   }
 
@@ -330,10 +400,12 @@ function centrarEnMiUbicacion() {
         weight: 3,
       }).addTo(mapa);
 
-      marcadorAdmin.bindPopup(`
-        <strong>Ubicación del administrador</strong><br>
-        Precisión aproximada: ${precision} metros
-      `).openPopup();
+      marcadorAdmin
+        .bindPopup(`
+          <strong>Ubicación del administrador</strong><br>
+          Precisión aproximada: ${precision} metros
+        `)
+        .openPopup();
     },
     (error) => {
       console.error("No se pudo obtener ubicación del administrador:", error);
